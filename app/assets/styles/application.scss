@@ -1,0 +1,144 @@
+@import "normalize.css";
+@import "font.css";
+
+$baseline: 22px;
+
+/* LAYOUT */
+
+#main{
+  max-width:960px;
+  margin:0 auto;
+  padding:72px 24px 48px 24px;  
+}
+
+header{
+  position:fixed;
+  width:100%;
+  height:$baseline * 2;
+  padding:11px;
+  background-color:#E6E7CD;
+}
+
+/* TYPO */
+
+body,input,textarea,p{
+  font-family: 'Libre Baskerville', serif;
+  font-weight:400;
+  font-style:normal;
+  color:#333;
+  
+	font-size: 16px; 
+	line-height: $baseline; 
+  text-align:center;
+}
+p{
+  margin-bottom: $baseline;   
+}
+a{
+  font-family: 'Libre Baskerville', serif;  
+  font-weight:700;
+  text-decoration:none;
+  margin:0 4px;
+  color: #333;
+}
+h1,h2,h3,h4,h5,h6{
+  font-family: "EB Garamond", serif;
+  font-weight:400;
+  font-style:normal;  
+  text-align:center;
+	line-height: $baseline*2; 
+	margin-bottom: $baseline;   
+}
+h1 { 
+	font-size: 40px; 
+}
+h2{
+	font-size: 36px; 
+}
+h3{
+  font-size: 28px;
+}
+h4,h5,h6{
+  line-height: $baseline;
+  margin-bottom: $baseline / 2;
+}
+
+/* FORMS */
+::-webkit-input-placeholder { 
+  color:#333;
+}
+:-moz-placeholder {
+  color:#333;
+}
+::-moz-placeholder {
+  color:#333;
+}
+:-ms-input-placeholder { 
+  color:#333;
+}
+textarea{
+  max-width:480px;
+  width:80%;
+  border:none;
+  border-bottom:1px dashed #dedede;  
+  outline:none;
+  resize: none;
+  padding: $baseline / 4;
+	margin-bottom: $baseline / 2;   
+}
+input{
+  border:none;
+  border-bottom:1px dashed #dedede;
+  padding: $baseline / 4;  
+	margin-bottom: $baseline / 2;   
+  outline:none;  
+}
+button{
+  border:none;
+  background:#E6E7CD;
+  padding:8px;  
+  &.delete{
+    background:#ff6600;
+  }
+  border-radius:2px;
+}
+.error{
+  background:#D2ABAF;
+  color:red;
+}
+.error_container{
+  color:red;
+}
+
+/* LISTS */
+.collection{
+  list-style:none;
+  max-width:480px;
+  width:80%;  
+  margin:0 auto;
+  padding:0;  
+  li{
+    margin-bottom:$baseline * 4;
+    h2 small a{ 
+      color: #999; 
+      font-style:italic;
+      font-size:80%;
+    }
+  }
+}
+
+/* HELPERS */
+.left{
+  float:left;
+}
+.right{
+  float:right;
+}
+.clearfix:before,
+.clearfix:after {
+    content: "";
+    display: table;
+}
+.clearfix:after {
+    clear: both;
+}

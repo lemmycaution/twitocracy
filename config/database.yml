@@ -1,0 +1,31 @@
+development:
+  adapter: em_postgresql
+  encoding: unicode
+  database: twote_development
+  pool: 6
+  connections: 6
+  username: postgres
+  password: 
+  host: localhost
+  port: 5432
+test:
+  adapter: em_postgresql
+  encoding: unicode
+  database: twote_test
+  pool: 6
+  connections: 6
+  username: postgres
+  password: 
+  host: localhost
+  port: 5432  
+production:
+  adapter: em_postgresql
+  encoding: unicode
+  database: twote_production
+  pool: 6
+  connections: 6
+  username: postgres
+  password: 
+  host: localhost
+  port: 5432    
+  
