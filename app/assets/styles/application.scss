@@ -24,11 +24,10 @@ header{
   padding:11px;
   background-color:#E6E7CD;
 }
-//#google_translate_element{
-//  position:fixed;
-//  right:11px;
-//  top: $baseline * 2 + $baseline/2;
-//}
+#google_translate_element{
+  max-width:100%;
+  overflow:hidden;
+}
 
 span.scopes, span#mobile-menu{
   position:relative;

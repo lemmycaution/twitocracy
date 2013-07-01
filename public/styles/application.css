@@ -18,6 +18,10 @@ header {
   padding: 11px;
   background-color: #E6E7CD; }
 
+#google_translate_element {
+  max-width: 100%;
+  overflow: hidden; }
+
 span.scopes, span#mobile-menu {
   position: relative; }
   span.scopes nav, span#mobile-menu nav {
