@@ -18,10 +18,6 @@ header {
   padding: 11px;
   background-color: #E6E7CD; }
 
-#google_translate_element {
-  max-width: 100%;
-  overflow: hidden; }
-
 span.scopes, span#mobile-menu {
   position: relative; }
   span.scopes nav, span#mobile-menu nav {
@@ -177,10 +173,17 @@ button {
   box-shadow: none !important;
   top: 44px !important; }
 
+#google_translate_element {
+  max-width: 100%;
+  overflow: hidden; }
+
 #mobile-menu {
   display: none; }
 
 @media all and (max-width: 568px) {
+  .skiptranslate {
+    display: none !important; }
+
   #desktop-menu {
     display: none; }
 
