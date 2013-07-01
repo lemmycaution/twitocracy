@@ -158,7 +158,7 @@ class API < Goliath::API
   # end
   
   def render_view(view, options = {})
-    throw :halt, [ options[:status] || 200, options[:headers] || {}, erb(view, {locals: options[:data]}) ]    
+    throw :halt, [ options[:status] || 200, options[:headers] || {'Content-Type' => 'text/html'}, erb(view, {locals: options[:data]}) ]    
   end
   
   def render_json(data = {}, options = {})
