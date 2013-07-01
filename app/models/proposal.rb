@@ -2,7 +2,7 @@ require "lib/twitocracy/tw_client"
 
 class Proposal < ActiveRecord::Base
   
-  DEFAULT_LIMIT = 2
+  DEFAULT_LIMIT = 8
   MAX_COUNT_PER_USER = 12
   
   belongs_to :user

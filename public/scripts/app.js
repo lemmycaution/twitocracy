@@ -29,9 +29,9 @@
         Backbone.history.start({
           pushState: true
         });
-        $(".scopes a.toggle").on("click", function(e) {
+        $("a.toggle").on("click", function(e) {
           e.preventDefault();
-          return $(".scopes nav").toggleClass("open");
+          return $("nav" + e.currentTarget.id).toggleClass("open");
         });
       }
 

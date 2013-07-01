@@ -43,8 +43,8 @@ define [
      
      Backbone.history.start pushState: true
      
-     $(".scopes a.toggle").on "click", (e) ->
+     $("a.toggle").on "click", (e) ->
        e.preventDefault()
-       $(".scopes nav").toggleClass("open")
+       $("nav#{e.currentTarget.id}").toggleClass("open")
        
   App

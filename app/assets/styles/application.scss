@@ -5,6 +5,12 @@ $baseline: 22px;
 
 /* LAYOUT */
 
+hr{
+  height:1px;
+  border:none;
+  background:#dedede;
+}
+
 #main{
   max-width:960px;
   margin:0 auto;
@@ -18,7 +24,13 @@ header{
   padding:11px;
   background-color:#E6E7CD;
 }
-span.scopes{
+#google_translate_element{
+  position:fixed;
+  right:11px;
+  top: $baseline * 2 + $baseline/2;
+}
+
+span.scopes, span#mobile-menu{
   position:relative;
 
   nav{
@@ -33,6 +45,7 @@ span.scopes{
     text-align:left;
     font-size:80%;
     display:none;
+    a{display:block;}
     &.open{ display:block;}
   }
 }
@@ -44,7 +57,7 @@ body,input,textarea,p{
   font-style:normal;
   color:#333;
   
-	font-size: 16px; 
+	font-size: 0.875em; //16px 
 	line-height: $baseline; 
   text-align:center;
 }
@@ -67,13 +80,13 @@ h1,h2,h3,h4,h5,h6{
 	margin-bottom: $baseline;   
 }
 h1 { 
-	font-size: 40px; 
+	font-size: 2.5em; //40px 
 }
 h2{
-	font-size: 36px; 
+	font-size: 2.25em; //36px 
 }
 h3{
-  font-size: 28px;
+  font-size: 1.75em; //28px
 }
 h4,h5,h6{
   line-height: $baseline;
@@ -144,6 +157,7 @@ button{
   }
 }
 .pagination{
+  padding:0;
   list-style:none;
   li{
     margin:0;
@@ -171,4 +185,16 @@ button{
 }
 .clearfix:after {
     clear: both;
+}
+
+#mobile-menu{display:none;}
+@media all and (max-width: 568px) {
+  #desktop-menu{display:none;}  
+  #mobile-menu{display:inline-block;}
+  body{font-size:0.8em;}
+  ul.collection{
+    max-width:100%;
+    width:100%;      
+  }
+  span.time{display:block;}
 }
