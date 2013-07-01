@@ -22,7 +22,7 @@
           this.model = options.model;
           this.model.on("change", this.render, this);
           this.model.on("destroy", this.remove, this);
-          this.render(true);
+          this.render();
         } else {
           this.model = new Proposal({
             id: options.id
@@ -35,10 +35,9 @@
         this.channel.bind('update', function(data) {
           return _this.model.set(data);
         });
-        this.channel.bind('destroy', function(data) {
+        return this.channel.bind('destroy', function(data) {
           return _this.remove();
         });
-        return _.bindAll(this);
       };
 
       ProposalView.prototype.events = function() {
@@ -62,22 +61,20 @@
 
       ProposalView.prototype.template = function(data, options) {
         var tmp;
-        tmp = "<h2><a href=\"/<%= model.get('id') %>\">“<%= model.get('subject') %>”</a>\n<br/>\n<small><a href=\"http://twitter.com/<%= model.get('owner') %>\"><%= model.get('owner') %></a></small>\n</h2>\n<div class=\"clearfix\">\n    <span class=\"time\"><%= model.remaining_time_to_human() %> remaining</span>                 \n    <% if (model.get(\"is_pool\")){ %>\n    \n    <% if (model.get(\"up_retweeted\")) { %>\n    <button class=\"un_upvote\">Yes (Unvote)! (<%= model.get('upvote_count') %>)</button>\n    <% } else { %>\n    <button class=\"upvote\">Yes! (<%= model.get('upvote_count') %>)</button>            \n    <% } %>\n    \n    <% if (model.get(\"down_retweeted\")) { %>\n    <button class=\"un_downvote\">No (Unvote)! (<%= model.get('downvote_count') %>)</button>\n    <% } else { %>\n    <button class=\"downvote\">No! (<%= model.get('downvote_count') %>)</button>\n    <% } %>\n                  \n    <% }else{ %>\n    \n    <% if (model.get(\"up_retweeted\")) { %>\n    <button class=\"un_upvote\">Endorse (Unvote)! (<%= model.get('upvote_count') %>)</button>            \n    <% } else { %>\n    <button class=\"upvote\">Endorse! (<%= model.get('upvote_count') %>)</button>            \n    <% } %>\n    \n    <% } %>\n    <% if(model.get(\"user_id\") == $(\".current_user\").attr('id') ) { %>\n    <small><button class=\"delete\">Delete</button></small>             \n    <% } %> \n</div>               \n<p>–</p>";
+        if (options == null) {
+          options = {
+            variable: "model"
+          };
+        }
+        tmp = "<h2><a href=\"/<%= model.get('id') %>\">“<%= model.get('subject') %>”</a>\n<br/>\n<small><a href=\"http://twitter.com/<%= model.get('owner') %>\"><%= model.get('owner') %></a></small>\n</h2>\n<div class=\"clearfix\">\n    <span class=\"time\"><%= model.remaining_time_to_human() %> remaining</span>                 \n    <% if (model.get(\"is_pool\")){ %>\n    \n    <% if (model.get(\"up_retweeted\")) { %>\n    <button class=\"un_upvote\">Un-upvote! (<%= model.get('upvote_count') %>)</button>\n    <% } else { %>\n    <button class=\"upvote\">Upvote! (<%= model.get('upvote_count') %>)</button>            \n    <% } %>\n    \n    <% if (model.get(\"down_retweeted\")) { %>\n    <button class=\"un_downvote\">Un-downvote! (<%= model.get('downvote_count') %>)</button>\n    <% } else { %>\n    <button class=\"downvote\">Downvote! (<%= model.get('downvote_count') %>)</button>\n    <% } %>\n                  \n    <% }else{ %>\n    \n    <% if (model.get(\"up_retweeted\")) { %>\n    <button class=\"un_upvote\">Un-endorse! (<%= model.get('upvote_count') %>)</button>            \n    <% } else { %>\n    <button class=\"upvote\">Endorse! (<%= model.get('upvote_count') %>)</button>            \n    <% } %>\n    \n    <% } %>\n    <% if(model.get(\"user_id\") == $(\".current_user\").attr('id') ) { %>\n    <small><button class=\"delete\">Delete</button></small>             \n    <% } %> \n</div>               \n<p>–</p>";
         return _.template(tmp, data, options);
       };
 
-      ProposalView.prototype.render = function(append) {
-        if (append == null) {
-          append = null;
-        }
-        if (append) {
-          $("ul.collection").append(this.$el.html(this.template(this.model, {
-            variable: "model"
-          })));
+      ProposalView.prototype.render = function() {
+        if (this.options.add === true) {
+          $("ul.collection").append(this.$el.html(this.template(this.model)));
         } else {
-          this.$el.html(this.template(this.model, {
-            variable: "model"
-          }));
+          this.$el.html(this.template(this.model));
         }
         return this;
       };
@@ -98,7 +95,8 @@
         app.set_button_state(e.currentTarget);
         this.model.save(this.vote_hash(vote), {
           wait: true,
-          patch: true
+          patch: true,
+          silent: true
         });
         return this;
       };
@@ -122,7 +120,12 @@
       ProposalView.prototype["delete"] = function(e) {
         app.set_button_state(e.currentTarget);
         this.model.destroy({
-          wait: true
+          wait: true,
+          success: function(model) {
+            if (window.location.pathname.match(/\/[0-9]+/) !== null) {
+              return window.location.href = "/";
+            }
+          }
         });
         return this;
       };

@@ -13,4 +13,11 @@ define [
     
     url: "/proposals"
     
+    # comparator: (proposal) ->
+    #   return proposal.get("created_at")
+    
+    parse: (response) ->
+      @pagination = {page: response.page, total: response.total_page}
+      return response.models
+    
   Proposals  

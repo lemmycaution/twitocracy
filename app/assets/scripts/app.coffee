@@ -15,9 +15,9 @@ define [
      
      @loading_indicator = "&nbsp;&nbsp;&#10227;&nbsp;&nbsp;"
      
-     Pusher.log = (message) ->
-       if (window.console && window.console.log) 
-         window.console.log(message)
+     # Pusher.log = (message) ->
+     #   if (window.console && window.console.log) 
+     #     window.console.log(message)
 
      @pusher = new Pusher('4fbe8880e77dc33c220e')
      
@@ -39,8 +39,12 @@ define [
        #   $("#indicator").show()
        # 
        # $(document).ajaxComplete () ->
-       #   $("#indicator").hide()
+       #   $("#indicator").hide()   
      
      Backbone.history.start pushState: true
+     
+     $(".scopes a.toggle").on "click", (e) ->
+       e.preventDefault()
+       $(".scopes nav").toggleClass("open")
        
   App

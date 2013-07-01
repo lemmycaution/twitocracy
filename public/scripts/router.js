@@ -15,13 +15,19 @@
       }
 
       Router.prototype.routes = {
-        "": "index",
+        "(scope/:scope)(page/:page)": "index",
+        "scope/:scope(/page/:page)": "index",
         "new": "new",
         ":id": "show"
       };
 
-      Router.prototype.index = function() {
-        return app.view = new ProposalsView;
+      Router.prototype.index = function(scope, page) {
+        return app.view = new ProposalsView({
+          data: {
+            scope: scope,
+            page: page
+          }
+        });
       };
 
       Router.prototype["new"] = function() {
@@ -72,7 +78,8 @@
 
       Router.prototype.show = function(id) {
         return app.view = new ProposalView({
-          id: id
+          id: id,
+          add: true
         });
       };
 

@@ -2,7 +2,8 @@ require "lib/twitocracy/tw_client"
 
 class Proposal < ActiveRecord::Base
   
-  # DEFAULT_LIMIT = 10
+  DEFAULT_LIMIT = 2
+  MAX_COUNT_PER_USER = 12
   
   belongs_to :user
   has_many   :retweets, dependent: :destroy
@@ -14,6 +15,7 @@ class Proposal < ActiveRecord::Base
   validates_length_of :subject, maximum: 140, if: lambda { |proposal| !proposal.is_pool }
   validates_length_of :up_tweet, maximum: 140
   validates_length_of :down_tweet, maximum: 140, if: lambda { |proposal| proposal.is_pool }  
+  validate :validate_count_against_rate_limit
   
   before_validation :generate_up_tweet_from_subject, if: lambda { |proposal| !proposal.is_pool }  
   
@@ -26,12 +28,13 @@ class Proposal < ActiveRecord::Base
   after_destroy { |p| p.push(:destroy) }
   
   scope :latest,    -> { order(created_at: :desc) }
-  scope :critical,  -> { order("ABS(finished_at - now())") }  
+  # TODO: fix pg error
+  # scope :critical,  -> { order("ABS(finished_at - now())") }  
   scope :up,        -> { order(up_retweet_count: :desc) }    
   scope :down,      -> { order(down_retweet_count: :desc) }      
   scope :closed,    -> { where("finished_at < ?", Time.now.at_end_of_day) }      
   scope :open,      -> { where("started_at <= ? and finished_at > ?", Time.now.beginning_of_day, Time.now.at_end_of_day) }        
-  # scope :page,      lambda {|page| limit(DEFAULT_LIMIT).offset((page-1)*DEFAULT_LIMIT) }  
+  scope :page,      lambda {|page| limit(DEFAULT_LIMIT).offset((page-1)*DEFAULT_LIMIT) }  
   default_scope -> { latest }
   
   attr_accessor :downvoting_enabled
@@ -135,6 +138,10 @@ class Proposal < ActiveRecord::Base
     rescue Exception => e
       ap e.inspect
     end
+  end
+  
+  def validate_count_against_rate_limit
+    errors.add(:base, "You can have maximum #{MAX_COUNT_PER_USER} open proposal at the same time") if self.user.proposals.open.count >= MAX_COUNT_PER_USER
   end
   
 end

@@ -27,6 +27,15 @@
       };
       return _.reduce($(form).serializeArray(), iter, {});
     };
+    _.compact = function(object) {
+      var i;
+      for (i in object) {
+        if (object[i] == null) {
+          delete object[i];
+        }
+      }
+      return object;
+    };
     return $(document).ready(function(e) {
       return window.app = new App;
     });

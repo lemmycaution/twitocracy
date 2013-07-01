@@ -16,10 +16,9 @@ define [
     initialize: (options) ->
       if options.model
         @model = options.model
-        # @id = "proposal-#{@model.get("id")}"                
         @model.on "change", @render, @
         @model.on "destroy", @remove, @                
-        @render(true)        
+        @render()        
       else
         @model = new Proposal(id: options.id)
         @model.on "change", @render, @
@@ -32,9 +31,6 @@ define [
       @channel.bind 'destroy', (data) =>
         @remove()
 
-      _.bindAll @
-
-      
     events: ->
       if @model.get("is_pool")
         events =
@@ -49,7 +45,7 @@ define [
         "click .un_upvote"     :  "un_upvote"        
         "click .delete"        :  "delete"        
             
-    template: (data,options)->
+    template: (data,options = {variable: "model"})->
 
       tmp = """
         <h2><a href="/<%= model.get('id') %>">“<%= model.get('subject') %>”</a>
@@ -61,21 +57,21 @@ define [
             <% if (model.get("is_pool")){ %>
             
             <% if (model.get("up_retweeted")) { %>
-            <button class="un_upvote">Yes (Unvote)! (<%= model.get('upvote_count') %>)</button>
+            <button class="un_upvote">Un-upvote! (<%= model.get('upvote_count') %>)</button>
             <% } else { %>
-            <button class="upvote">Yes! (<%= model.get('upvote_count') %>)</button>            
+            <button class="upvote">Upvote! (<%= model.get('upvote_count') %>)</button>            
             <% } %>
             
             <% if (model.get("down_retweeted")) { %>
-            <button class="un_downvote">No (Unvote)! (<%= model.get('downvote_count') %>)</button>
+            <button class="un_downvote">Un-downvote! (<%= model.get('downvote_count') %>)</button>
             <% } else { %>
-            <button class="downvote">No! (<%= model.get('downvote_count') %>)</button>
+            <button class="downvote">Downvote! (<%= model.get('downvote_count') %>)</button>
             <% } %>
                           
             <% }else{ %>
             
             <% if (model.get("up_retweeted")) { %>
-            <button class="un_upvote">Endorse (Unvote)! (<%= model.get('upvote_count') %>)</button>            
+            <button class="un_upvote">Un-endorse! (<%= model.get('upvote_count') %>)</button>            
             <% } else { %>
             <button class="upvote">Endorse! (<%= model.get('upvote_count') %>)</button>            
             <% } %>
@@ -89,11 +85,12 @@ define [
         """    
       _.template(tmp,data,options)
     
-    render: (append = null)->
-      if append
-        $("ul.collection").append @$el.html(@template(@model,{variable: "model"}))
+    render: () ->
+      if @options.add is true
+        $("ul.collection").append @$el.html(@template(@model))        
       else
-        @$el.html @template(@model,{variable: "model"})
+        @$el.html @template(@model)        
+
       @    
       
     vote_hash: (vote) ->
@@ -103,7 +100,7 @@ define [
       
     do_vote: (e, vote) ->
       app.set_button_state e.currentTarget
-      @model.save(@vote_hash(vote), {wait:true, patch: true})
+      @model.save(@vote_hash(vote), {wait:true, patch: true, silent: true})
       @  
       
     upvote: (e) ->  
@@ -120,7 +117,10 @@ define [
       
     delete: (e) ->  
       app.set_button_state e.currentTarget
-      @model.destroy({wait:true})
+      @model.destroy
+        wait: true
+        success: (model) ->
+          if window.location.pathname.match(/\/[0-9]+/) != null then window.location.href = "/"
       @            
   
   ProposalView  

@@ -15,12 +15,13 @@ define [
   class Router extends Backbone.Router
     
       routes:
-        ""                : "index"
-        "new"             : "new"
-        ":id"             : "show" 
+        "(scope/:scope)(page/:page)"     : "index"
+        "scope/:scope(/page/:page)"      : "index"
+        "new"                            : "new"
+        ":id"                            : "show" 
 
-      index: ->
-        app.view = new ProposalsView
+      index: (scope, page) ->
+        app.view = new ProposalsView(data: {scope: scope, page: page})
         
       new: ->
         
@@ -62,6 +63,6 @@ define [
             
     
       show: (id) ->
-        app.view = new ProposalView(id: id)
+        app.view = new ProposalView(id: id, add: true)
           
   Router  

@@ -29,6 +29,12 @@ require [
       memo
     _.reduce($(form).serializeArray(), iter, {})
   
+  _.compact = (object) ->
+    for i of object
+      unless object[i]? then delete object[i]
+    object  
+        
+  
   $(document).ready (e) ->
     
     window.app = new App

@@ -18,7 +18,24 @@ header{
   padding:11px;
   background-color:#E6E7CD;
 }
+span.scopes{
+  position:relative;
 
+  nav{
+    position: absolute;
+    width: 100px;
+    height: auto;
+    max-width: 100px;
+    padding: 8px;
+    background: #fff;
+    border: 1px solid #dedede;
+    border-radius: 2px;
+    text-align:left;
+    font-size:80%;
+    display:none;
+    &.open{ display:block;}
+  }
+}
 /* TYPO */
 
 body,input,textarea,p{
@@ -123,6 +140,19 @@ button{
       color: #999; 
       font-style:italic;
       font-size:80%;
+    }
+  }
+}
+.pagination{
+  list-style:none;
+  li{
+    margin:0;
+    display:inline;
+    a{
+      text-decoration:underline;
+      &.current{
+        text-decoration:none;
+      }
     }
   }
 }

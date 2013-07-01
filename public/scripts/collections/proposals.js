@@ -18,6 +18,14 @@
 
       Proposals.prototype.url = "/proposals";
 
+      Proposals.prototype.parse = function(response) {
+        this.pagination = {
+          page: response.page,
+          total: response.total_page
+        };
+        return response.models;
+      };
+
       return Proposals;
 
     })(Backbone.Collection);

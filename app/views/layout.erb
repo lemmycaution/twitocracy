@@ -21,6 +21,14 @@
 
     <div class="left">
       <a href="/">Home</a>       
+      <span class="scopes">
+        <a class="toggle">Scope</a>
+        <nav>
+          <a href="/scope/up">Ups</a>
+          <a href="/scope/down">Downs</a>        
+          <a href="/scope/closed">Closeds</a>        
+        </nav>
+      </span>
       <% if current_user %><a href="/new">New</a><% end %>
     </div>
     

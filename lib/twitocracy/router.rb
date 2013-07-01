@@ -32,7 +32,18 @@ module Twitocracy
   
     def response(env)
 
-      if env["REQUEST_PATH"] =~ /\/([a-zA-Z]+)\/([0-9]+)/
+      matches = env["REQUEST_PATH"].scan(/\/(scope|page)\/([a-zA-z0-9]+)/)
+      if matches.any?
+        path = "/"
+        if matches[0][0] == "scope"
+          params = {"scope" => matches[0][1]}
+          params["page"] = matches[1][0] if matches.length > 1
+        elsif matches[0][0] == "page"  
+          params = {"page" => matches[0][1]}          
+          params["scope"] = matches[1][0] if matches.length > 1          
+        end
+        env["params"] = (env["params"] || {}).merge(params)  
+      elsif env["REQUEST_PATH"] =~ /\/([a-zA-Z]+)\/([0-9]+)/
         path = "/#{$1}/:id"
         env["params"] = (env["params"] || {}).merge("id" => $2)
       elsif env["REQUEST_PATH"] =~ /\/([0-9]+)/

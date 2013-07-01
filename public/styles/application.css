@@ -13,6 +13,23 @@ header {
   padding: 11px;
   background-color: #E6E7CD; }
 
+span.scopes {
+  position: relative; }
+  span.scopes nav {
+    position: absolute;
+    width: 100px;
+    height: auto;
+    max-width: 100px;
+    padding: 8px;
+    background: #fff;
+    border: 1px solid #dedede;
+    border-radius: 2px;
+    text-align: left;
+    font-size: 80%;
+    display: none; }
+    span.scopes nav.open {
+      display: block; }
+
 /* TYPO */
 body, input, textarea, p {
   font-family: 'Libre Baskerville', serif;
@@ -112,6 +129,16 @@ button {
       color: #999;
       font-style: italic;
       font-size: 80%; }
+
+.pagination {
+  list-style: none; }
+  .pagination li {
+    margin: 0;
+    display: inline; }
+    .pagination li a {
+      text-decoration: underline; }
+      .pagination li a.current {
+        text-decoration: none; }
 
 /* HELPERS */
 .left {
