@@ -6,7 +6,7 @@
       function App() {
         window.app = this;
         this.router = new Router;
-        this.loading_indicator = "&nbsp;&nbsp;&#10227;&nbsp;&nbsp;";
+        this.loading_indicator = "&nbsp;&nbsp;&#8635;&nbsp;&nbsp;";
         this.pusher = new Pusher('4fbe8880e77dc33c220e');
         this.set_button_state = function(el, loading) {
           var $el;

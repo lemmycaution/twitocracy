@@ -13,7 +13,7 @@ define [
      
      @router = new Router
      
-     @loading_indicator = "&nbsp;&nbsp;&#10227;&nbsp;&nbsp;"
+     @loading_indicator = "&nbsp;&nbsp;&#8635;&nbsp;&nbsp;"
      
      # Pusher.log = (message) ->
      #   if (window.console && window.console.log) 
