@@ -67,7 +67,7 @@
               $(".error_container").remove();
               _results = [];
               for (error in errors) {
-                _results.push($("#proposal_" + error).addClass("error").parent("p").append("<small class=\"error_container\"><br/>" + (errors[error].join(",")) + "</small>"));
+                _results.push($("<small class=\"error_container\"><br/>" + (errors[error].join(",")) + "</small>").insertAfter($("#proposal_" + error).addClass("error")));
               }
               return _results;
             }

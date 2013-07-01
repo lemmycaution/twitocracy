@@ -18,6 +18,7 @@ class Proposal < ActiveRecord::Base
   validates_length_of :subject, maximum: PROPOSAL_TWEET_LENGTH, if: lambda { |proposal| !proposal.is_pool }
   validates_length_of :up_tweet, maximum: PROPOSAL_TWEET_LENGTH
   validates_length_of :down_tweet, maximum: PROPOSAL_TWEET_LENGTH, if: lambda { |proposal| proposal.is_pool }  
+  validate :validate_up_down_tweet_diff, if: lambda { |proposal| proposal.is_pool }    
   validate :validate_started_at
   validate :validate_finished_at
   validate :validate_count_against_rate_limit
@@ -38,7 +39,8 @@ class Proposal < ActiveRecord::Base
   scope :up,        -> { order(up_retweet_count: :desc) }    
   scope :down,      -> { order(down_retweet_count: :desc) }      
   scope :closed,    -> { where("finished_at < ?", Time.now.at_end_of_day) }      
-  scope :open,      -> { where("finished_at > ?", Time.now.at_end_of_day) }        
+  scope :open,      -> { where("started_at < ? and finished_at > ?", Time.now.at_end_of_day, Time.now.beginning_of_day) }        
+  scope :upcoming,  -> { where("started_at > ?", Time.now.at_end_of_day) }          
   scope :page,      lambda {|page| limit(DEFAULT_LIMIT).offset((page-1)*DEFAULT_LIMIT) }  
   default_scope -> { latest }
   
@@ -102,6 +104,10 @@ class Proposal < ActiveRecord::Base
   
   def is_pool
     self.persisted? ? self.down_tweet.present? : self.downvoting_enabled.present?
+  end
+  
+  def is_open
+    self.started_at < Time.now.at_end_of_day and self.finished_at > Time.now.beginning_of_day
   end
   
   def upvote_count
@@ -170,6 +176,10 @@ class Proposal < ActiveRecord::Base
   
   def validate_date_on_or_after(date)
     date >= Date.current
+  end
+  
+  def validate_up_down_tweet_diff
+    errors.add(:down_tweet, "must be different then up tweet") if self.up_tweet == self.down_tweet
   end
   
 end

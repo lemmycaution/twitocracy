@@ -1,5 +1,5 @@
 <h1>Create a New Proposal</h1>
-<p>⁓</p>
+<p>&#9813;</p>
 <form id="new_proposal" name="new_proposal" method="post" action="/proposals">
   <p><small>*All fields are mandatory</small></p>  
   <p>
@@ -7,36 +7,36 @@
       Downvoting Enabled 
       <input type="checkbox" id="proposal_downvoting_enabled" name="downvoting_enabled" checked value="true" style="position: relative;top: -2px;"/> 
     </label>
-    <br/>
-    –    
+    <i class="sep">&#10020;</i>        
   </p>
+    
   <p>
     <textarea id="proposal_subject" name="subject" placeholder="Write your brief proposal here for what you want to open for voting"></textarea>
-    <br/>
-    –
+    <i class="sep">&#10020;</i>        
   </p>  
+    
   <p>
     <textarea id="proposal_up_tweet" name="up_tweet" placeholder="Write a tweet here for up votes"></textarea>
-    <br/>
-    –    
+    <i class="sep">&#10020;</i>        
   </p>    
+    
   <p>
     <textarea id="proposal_down_tweet" name="down_tweet" placeholder="Write a tweet for down votes"></textarea>
-    <br/>
-    –    
+    <i class="sep">&#10020;</i>        
   </p>    
+    
   <p>
     <label for="started_at">When voting starts?</label><br/><br/>
-    <input type="text" name="started_at" id="proposal_started_at" placeholder="dd/mm/yyyy" />
-    <br/>
-    –    
+    <input type="date" name="started_at" id="proposal_started_at" placeholder="dd/mm/yyyy" />
+    <i class="sep">&#10020;</i>
   </p>          
+      
   <p>
     <label for="finished_at">When voting ends?</label><br/><br/>
-    <input type="text" name="finished_at" id="proposal_finished_at" placeholder="dd/mm/yyyy" />
+    <input type="date" name="finished_at" id="proposal_finished_at" placeholder="dd/mm/yyyy" />
+    <i class="sep">&#10020;</i>        
   </p>          
-  <br/>  
-  <br/>
+    
   <p>
     <button>Submit</button>
   </p>  

@@ -101,7 +101,6 @@ textarea {
   max-width: 480px;
   width: 80%;
   border: none;
-  border-bottom: 1px dashed #dedede;
   outline: none;
   resize: none;
   padding: 5.5px;
@@ -109,7 +108,6 @@ textarea {
 
 input {
   border: none;
-  border-bottom: 1px dashed #dedede;
   padding: 5.5px;
   margin-bottom: 11px;
   outline: none; }
@@ -124,24 +122,31 @@ button {
 
 .error {
   background: #D2ABAF;
+  border: none;
   color: red; }
 
 .error_container {
   color: red; }
 
 /* LISTS */
+i.sep {
+  color: #dedede;
+  display: block;
+  margin: 22px;
+  font-style: normal; }
+
 .collection {
   list-style: none;
   max-width: 480px;
   width: 80%;
   margin: 0 auto;
   padding: 0; }
-  .collection li {
-    margin-bottom: 88px; }
-    .collection li h2 small a {
-      color: #999;
-      font-style: italic;
-      font-size: 80%; }
+  .collection li h2 small a {
+    color: #999;
+    font-style: italic;
+    font-size: 80%; }
+  .collection li i.sep {
+    margin: 44px 0; }
 
 .pagination {
   padding: 0;
@@ -176,7 +181,8 @@ button {
 
 #google_translate_element {
   max-width: 100%;
-  overflow: hidden; }
+  overflow: hidden;
+  margin-top: 88px; }
 
 #mobile-menu {
   display: none; }

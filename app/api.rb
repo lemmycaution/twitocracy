@@ -81,8 +81,8 @@ class API < Goliath::API
   
   # index
   get "/proposals" do
-    proposals = Proposal.open
-    proposals = proposals.public_send params["scope"] if params["scope"]
+    proposals = Proposal.all
+    proposals = proposals.public_send params["scope"] || :open
     
     page = (params["page"] || 1).to_i
     total_page = [(proposals.count.to_f / Proposal::DEFAULT_LIMIT.to_f).ceil,1].max

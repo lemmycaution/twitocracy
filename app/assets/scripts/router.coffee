@@ -60,8 +60,9 @@ define [
               errors =  JSON.parse(xhr.responseText)
               $(".error_container").remove()
               for error of errors
-                $("#proposal_#{error}").addClass("error").
-                parent("p").append("<small class=\"error_container\"><br/>#{errors[error].join(",")}</small>")
+                $("<small class=\"error_container\"><br/>#{errors[error].join(",")}</small>").insertAfter(
+                  $("#proposal_#{error}").addClass("error")
+                )  
           )
             
     

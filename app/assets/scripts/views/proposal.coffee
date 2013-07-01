@@ -81,7 +81,7 @@ define [
             <small><button class="delete">Delete</button></small>             
             <% } %> 
         </div>               
-        <p>–</p>
+        <i class="sep">&#10020;</i>
         """    
       _.template(tmp,data,options)
     
