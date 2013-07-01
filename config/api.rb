@@ -28,7 +28,14 @@ end
 #   OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE 
 # end
 
-config[:dalli] = Dalli::Client.new('localhost:11211', { :namespace => "twote", :compress => true })
+if ENV['RACK_ENV']=="development"
+  config[:dalli] = Dalli::Client.new('localhost:11211', { :namespace => "twote", :compress => true })
+else
+  config[:dalli] = Dalli::Client.new(ENV["MEMCACHIER_SERVERS"].split(","),
+                      {:username => ENV["MEMCACHIER_USERNAME"],
+                       :password => ENV["MEMCACHIER_PASSWORD"],
+                       :namespace => "twote", :compress => true})
+end
 
 config["twitter_oauth"] = TwitterOAuth::Client.new(
   :consumer_key => ENV['CONSUMER_KEY'],
