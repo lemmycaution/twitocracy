@@ -97,7 +97,7 @@ class Proposal < ActiveRecord::Base
   end
   
   def is_pool
-    self.persisted? ? self.down_tweet.present? : (self.downvoting_enabled == "true")
+    self.persisted? ? self.down_tweet.present? : self.downvoting_enabled
   end
   
   def upvote_count

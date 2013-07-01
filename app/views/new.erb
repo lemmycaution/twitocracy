@@ -3,12 +3,9 @@
 <form id="new_proposal" name="new_proposal" method="post" action="/proposals">
   <p><small>*All fields are mandatory</small></p>  
   <p>
-    <label>Downvoting </label>
-    <label for="proposal_is_proposal_yes">
-      <input type="radio" id="proposal_is_proposal_yes" name="downvoting_enabled" value="true" checked /> Enabled
-    </label>
-    <label for="proposal_is_proposal_no">    
-      <input type="radio" id="proposal_is_proposal_no" name="downvoting_enabled" value="false" /> Disabled</label>   
+    <label for="downvoting_enabled">
+      Downvoting Enabled 
+      <input type="checkbox" id="downvoting_enabled" name="downvoting_enabled" checked style="position: relative;top: -2px;"/> 
     </label>
     <br/>
     –    

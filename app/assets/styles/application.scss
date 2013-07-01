@@ -24,11 +24,11 @@ header{
   padding:11px;
   background-color:#E6E7CD;
 }
-#google_translate_element{
-  position:fixed;
-  right:11px;
-  top: $baseline * 2 + $baseline/2;
-}
+//#google_translate_element{
+//  position:fixed;
+//  right:11px;
+//  top: $baseline * 2 + $baseline/2;
+//}
 
 span.scopes, span#mobile-menu{
   position:relative;
@@ -50,14 +50,18 @@ span.scopes, span#mobile-menu{
   }
 }
 /* TYPO */
-
+body{
+  font-size: 0.875em; //16px 
+}
+input,textarea,p{
+  font-size: 1em;
+}
 body,input,textarea,p{
   font-family: 'Libre Baskerville', serif;
   font-weight:400;
   font-style:normal;
   color:#333;
   
-	font-size: 0.875em; //16px 
 	line-height: $baseline; 
   text-align:center;
 }
@@ -185,6 +189,12 @@ button{
 }
 .clearfix:after {
     clear: both;
+}
+
+/* FIXES */
+.skiptranslate iframe{
+  box-shadow:none !important;
+  top:44px !important;
 }
 
 #mobile-menu{display:none;}
