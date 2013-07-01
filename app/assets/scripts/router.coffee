@@ -25,8 +25,9 @@ define [
         
       new: ->
         
-        $("input[name=downvoting_enabled]").on "change", (e) =>
-          console.log $(e.currentTarget).val()
+        $("#proposal_downvoting_enabled").on "change", (e) =>
+          $(e.currentTarget).val($(e.currentTarget).is(":checked"))
+          console.log  $(e.currentTarget).val()
           if $(e.currentTarget).is(":checked")
             $("#proposal_up_tweet, #proposal_down_tweet").
             removeAttr("disabled").parent("p").show()

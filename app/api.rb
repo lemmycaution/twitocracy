@@ -86,7 +86,6 @@ class API < Goliath::API
     
     page = (params["page"] || 1).to_i
     total_page = [(proposals.count.to_f / Proposal::DEFAULT_LIMIT.to_f).ceil,1].max
-    ap total_page
 
     render_json({models: proposals.page(page), page: page, total_page: total_page})
   end

@@ -32,7 +32,8 @@
 
       Router.prototype["new"] = function() {
         var _this = this;
-        $("input[name=downvoting_enabled]").on("change", function(e) {
+        $("#proposal_downvoting_enabled").on("change", function(e) {
+          $(e.currentTarget).val($(e.currentTarget).is(":checked"));
           console.log($(e.currentTarget).val());
           if ($(e.currentTarget).is(":checked")) {
             return $("#proposal_up_tweet, #proposal_down_tweet").removeAttr("disabled").parent("p").show();

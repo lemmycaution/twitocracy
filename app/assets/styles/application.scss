@@ -38,12 +38,13 @@ span.scopes, span#mobile-menu{
     border: 1px solid #dedede;
     border-radius: 2px;
     text-align:left;
-    font-size:80%;
+    font-size:90%;
     display:none;
-    a{display:block;}
+    a{display:block;margin:8px 0;}
     &.open{ display:block;}
   }
 }
+
 /* TYPO */
 body{
   font-size: 0.875em; //16px 
@@ -201,7 +202,20 @@ button{
 @media all and (max-width: 568px) {
   .skiptranslate iframe{display:none !important;}
   #desktop-menu{display:none;}  
-  #mobile-menu{display:inline-block;}
+  #mobile-menu{
+    display:inline-block;
+    nav{
+      background: lighten(#E6E7CD,10) !important;
+      position: fixed !important;
+      left: 0 !important;
+      top: 44px !important;
+      border-top: none !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow: auto !important;
+      max-height: 100% !important;
+    }
+  }
   body{font-size:0.8em;}
   ul.collection{
     max-width:100%;

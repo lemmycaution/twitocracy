@@ -4,6 +4,9 @@ class Proposal < ActiveRecord::Base
   
   DEFAULT_LIMIT = 8
   MAX_COUNT_PER_USER = 12
+  SHORT_URL_LENGTH = 23
+  TWEET_LENGTH = 140
+  PROPOSAL_TWEET_LENGTH = TWEET_LENGTH - SHORT_URL_LENGTH
   
   belongs_to :user
   has_many   :retweets, dependent: :destroy
@@ -12,9 +15,9 @@ class Proposal < ActiveRecord::Base
   validates_presence_of :user_id, :subject, :up_tweet, :started_at, :finished_at
   validates_presence_of :down_tweet, if: lambda { |proposal| proposal.is_pool }  
   
-  validates_length_of :subject, maximum: 140, if: lambda { |proposal| !proposal.is_pool }
-  validates_length_of :up_tweet, maximum: 140
-  validates_length_of :down_tweet, maximum: 140, if: lambda { |proposal| proposal.is_pool }  
+  validates_length_of :subject, maximum: PROPOSAL_TWEET_LENGTH, if: lambda { |proposal| !proposal.is_pool }
+  validates_length_of :up_tweet, maximum: PROPOSAL_TWEET_LENGTH
+  validates_length_of :down_tweet, maximum: PROPOSAL_TWEET_LENGTH, if: lambda { |proposal| proposal.is_pool }  
   validate :validate_started_at
   validate :validate_finished_at
   validate :validate_count_against_rate_limit
@@ -55,6 +58,7 @@ class Proposal < ActiveRecord::Base
           end
         end
       else
+        inject_url_into_tweets
         tweet = Twitocracy::TwClient.tweet(user,self.#{action}_tweet)  
         self.update_attributes(#{action}_tweetid: tweet.id) unless tweet.try(:id).nil?
       end
@@ -97,7 +101,7 @@ class Proposal < ActiveRecord::Base
   end
   
   def is_pool
-    self.persisted? ? self.down_tweet.present? : self.downvoting_enabled
+    self.persisted? ? self.down_tweet.present? : self.downvoting_enabled.present?
   end
   
   def upvote_count
@@ -118,19 +122,24 @@ class Proposal < ActiveRecord::Base
   end
   
   private
+
+  def generate_up_tweet_from_subject
+    self.up_tweet = self.subject
+  end
+  
+  def inject_url_into_tweets
+    self.up_tweet = "#{self.up_tweet} http://twitocracy.herokuapp.com/#{self.id}"
+    self.down_tweet = "#{self.down_tweet} http://twitocracy.herokuapp.com/#{self.id}" if self.is_pool    
+  end
   
   def post_to_twitter
+    inject_url_into_tweets
     tweet = Twitocracy::TwClient.tweet(self.user, self.up_tweet)
-    ap tweet.to_json
     begin
       self.update_attributes(up_tweetid: tweet.id) unless tweet.try(:id).nil?
     rescue Exception => e
       ap e.inspect
     end    
-  end
-  
-  def generate_up_tweet_from_subject
-    self.up_tweet = self.subject
   end
   
   def remove_from_twitter
