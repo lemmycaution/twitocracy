@@ -1,4 +1,1 @@
 app: ruby boot.rb -sv -p $PORT
-
-coffee: coffee --watch --compile --output public/scripts app/assets/scripts
-sass: sass --watch app/assets/styles:public/styles --trace
