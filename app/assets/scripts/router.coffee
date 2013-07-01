@@ -38,15 +38,16 @@ define [
           if $e.hasClass("error")
             $e.removeClass("error").parent("p").find("small").remove()
         
-        d = new Date()
-        $("#proposal_started_at").val "#{d.getDate()}/#{d.getMonth()+1}/#{d.getFullYear()-1}"
-        $("#proposal_finished_at").val "#{d.getDate()}/#{d.getMonth()+1}/#{d.getFullYear()+1}"        
+        # d = new Date()
+        # $("#proposal_started_at").val "#{d.getDate()}/#{d.getMonth()+1}/#{d.getFullYear()}"
+        # $("#proposal_finished_at").val "#{d.getDate()}/#{d.getMonth()+1}/#{d.getFullYear()}"        
           
         $("#new_proposal").on "submit", (e) =>
           e.preventDefault()          
           $e = $(e.currentTarget)
           app.set_button_state $e.find("button")[0]
           data = _.serializeForm(e.currentTarget)
+          $(".error_container").remove()
           proposals = new Proposals
           proposals.create(
             data,

@@ -31,8 +31,7 @@
       };
 
       Router.prototype["new"] = function() {
-        var d,
-          _this = this;
+        var _this = this;
         $("input[name=downvoting_enabled]").on("change", function(e) {
           if ($(e.currentTarget).val() === "true") {
             return $("#proposal_up_tweet, #proposal_down_tweet").removeAttr("disabled").parent("p").show();
@@ -47,15 +46,13 @@
             return $e.removeClass("error").parent("p").find("small").remove();
           }
         });
-        d = new Date();
-        $("#proposal_started_at").val("" + (d.getDate()) + "/" + (d.getMonth() + 1) + "/" + (d.getFullYear() - 1));
-        $("#proposal_finished_at").val("" + (d.getDate()) + "/" + (d.getMonth() + 1) + "/" + (d.getFullYear() + 1));
         return $("#new_proposal").on("submit", function(e) {
           var $e, data, proposals;
           e.preventDefault();
           $e = $(e.currentTarget);
           app.set_button_state($e.find("button")[0]);
           data = _.serializeForm(e.currentTarget);
+          $(".error_container").remove();
           proposals = new Proposals;
           return proposals.create(data, {
             success: function(model) {

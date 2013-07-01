@@ -11,8 +11,8 @@ class API < Goliath::API
   
   use Rack::Static,                     
   :root => Goliath::Application.root_path("public"),
-  :urls => ["/favicon.ico", '/styles', '/scripts', '/images']
-  # :cache_control => 'public, max-age=3600'
+  :urls => ["/favicon.ico", '/styles', '/scripts', '/images'],
+  :cache_control => 'public, max-age=3600'
   use Goliath::Rack::Render
   use Goliath::Rack::DefaultMimeType
   use Goliath::Rack::Params  
