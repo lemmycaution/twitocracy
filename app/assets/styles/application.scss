@@ -199,7 +199,7 @@ button{
 #mobile-menu{display:none;}
 
 @media all and (max-width: 568px) {
-  .skiptranslate{display:none !important;}
+  .skiptranslate iframe{display:none !important;}
   #desktop-menu{display:none;}  
   #mobile-menu{display:inline-block;}
   body{font-size:0.8em;}

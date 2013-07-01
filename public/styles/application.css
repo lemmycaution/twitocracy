@@ -181,7 +181,7 @@ button {
   display: none; }
 
 @media all and (max-width: 568px) {
-  .skiptranslate {
+  .skiptranslate iframe {
     display: none !important; }
 
   #desktop-menu {
