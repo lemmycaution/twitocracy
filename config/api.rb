@@ -29,12 +29,15 @@ end
 # end
 
 if ENV['RACK_ENV']=="development"
-  config[:dalli] = Dalli::Client.new('localhost:11211', { :namespace => "twote", :compress => true })
+  config[:dalli] = Dalli::Client.new('localhost:11211', { 
+    :namespace => "twote", :compress => true, :threadsafe => true })
 else
   config[:dalli] = Dalli::Client.new(ENV["MEMCACHIER_SERVERS"].split(","),
                       {:username => ENV["MEMCACHIER_USERNAME"],
                        :password => ENV["MEMCACHIER_PASSWORD"],
-                       :namespace => "twote", :compress => true})
+                       :namespace => "twote", 
+                       :compress => true, 
+                       :threadsafe => true})
 end
 
 config["twitter_oauth"] = TwitterOAuth::Client.new(
