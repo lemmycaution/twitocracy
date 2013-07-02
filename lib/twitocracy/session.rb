@@ -10,7 +10,6 @@ module Twitocracy
     
     def pre_process
       get_session
-      ap "get session #{env[ENV_SESSION_KEY].inspect}"
       Goliath::Connection::AsyncResponse
     end
   
@@ -51,7 +50,6 @@ module Twitocracy
     
     def session_key
       cookie = ::Rack::Utils.parse_query(env["HTTP_COOKIE"])
-      ap "cookie #{cookie.inspect}"
       cookie.present? ? cookie[SID] : BCrypt::Password.create(Time.now)      
     end
 
