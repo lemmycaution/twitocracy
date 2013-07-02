@@ -7,8 +7,6 @@ module Twitocracy
       Twitter.configure do |config|
         config.consumer_key       = ENV['CONSUMER_KEY']
         config.consumer_secret    = ENV['CONSUMER_SECRET']
-        config.oauth_token        = ENV['OAUTH_TOKEN']
-        config.oauth_token_secret = ENV['OAUTH_TOKEN_SECRET']
       end
       @period = 60
     end
@@ -31,12 +29,22 @@ module Twitocracy
           begin
             twitter = proposal.user.token.present? ? client(proposal.user) : Twitter
             updates = {}
-            up_retweet_count = proposal.up_tweetid ? twitter.status(proposal.up_tweetid).try(:retweet_count) || 0 : 0
+            begin
+              up_retweet_count = proposal.up_tweetid ? twitter.status(proposal.up_tweetid).try(:retweet_count) || 0 : 0
+            rescue Twitter::Error::NotFound
+              updates[:up_tweetid] = nil
+              updates[:up_retweet_count] = 0
+            end
+            begin
             down_retweet_count = proposal.down_tweetid ? twitter.status(proposal.down_tweetid).try(:retweet_count) || 0 : 0          
+            rescue Twitter::Error::NotFound
+              updates[:down_tweetid] = nil
+              updates[:down_retweet_count] = 0
+            end            
             updates[:up_retweet_count] = up_retweet_count if proposal.up_retweet_count != up_retweet_count
             updates[:down_retweet_count] = down_retweet_count if proposal.down_retweet_count != down_retweet_count
             proposal.update(updates) unless updates.values.empty?
-          rescue Twitter::Error::TooManyRequests, Twitter::Error::Unauthorized, Twitter::Error::NotFound, Exception => error
+          rescue Twitter::Error::TooManyRequests, Twitter::Error::Unauthorized, Exception => error
             case error
             when Twitter::Error::Unauthorized
               # Clear user auth data if unauthorized by twitter and use App token instead
@@ -47,11 +55,6 @@ module Twitocracy
               # retry any sooner, it will almost certainly fail with the same exception.
               @timer.cancel 
               EM.add_timer(error.rate_limit.reset_in) { clock! }
-              # retry
-            when Twitter::Error::NotFound  
-              proposal.destroy
-              @timer.cancel 
-              EM.add_timer(1) { clock! }              
               # retry
             else 
               ap error.inspect  

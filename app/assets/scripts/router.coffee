@@ -25,15 +25,16 @@ define [
         
       new: ->
         
-        $("#proposal_downvoting_enabled").on "change", (e) =>
+        inputs = "#proposal_up_tweet, #proposal_down_tweet, #proposal_owner_vote_up, #proposal_owner_vote_down"
+        
+        $("#proposal_downvoting_enabled").on "change", (e) =>  
           $(e.currentTarget).val($(e.currentTarget).is(":checked"))
-          console.log  $(e.currentTarget).val()
           if $(e.currentTarget).is(":checked")
-            $("#proposal_up_tweet, #proposal_down_tweet").
-            removeAttr("disabled").parent("p").show()
+            $(inputs).
+            removeAttr("disabled").parents("p").show()
           else
-            $("#proposal_up_tweet, #proposal_down_tweet").
-            attr("disabled",true).parent("p").hide()            
+            $(inputs).
+            attr("disabled",true).parents("p").hide()            
           
         $("textarea, input").on "change", (e) =>
           $e = $(e.currentTarget)

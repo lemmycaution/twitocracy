@@ -5,7 +5,9 @@ $stdout.sync = true
 require "bundler/setup"
 Bundler.require
 
-# OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE 
+if ENV['RACK_ENV'] == "development"
+  OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE 
+end
 
 require 'lib/hash'
 

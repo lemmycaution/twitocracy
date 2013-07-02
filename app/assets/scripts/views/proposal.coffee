@@ -16,13 +16,13 @@ define [
     initialize: (options) ->
       if options.model
         @model = options.model
-        @model.on "change", @render, @
-        @model.on "destroy", @remove, @                
+        @model.bind "change", @render, @
+        @model.bind "destroy", @remove, @                
         @render()        
       else
         @model = new Proposal(id: options.id)
-        @model.on "change", @render, @
-        @model.on "destroy", @remove, @        
+        @model.bind "change", @render, @
+        @model.bind "destroy", @remove, @        
         @model.fetch()
       
       @channel = app.pusher.subscribe("proposal-#{@model.get("id")}")
@@ -31,20 +31,11 @@ define [
       @channel.bind 'destroy', (data) =>
         @remove()
 
-    events: ->
-      if @model.get("is_pool")
-        events =
-        "click .upvote"         :  "upvote"
-        "click .downvote"       :  "downvote"  
-        "click .un_upvote"      :  "un_upvote"
-        "click .un_downvote"    :  "un_downvote"                
-        "click .delete"         :  "delete"      
-      else
-        events =  
-        "click .upvote"        :  "upvote"
-        "click .un_upvote"     :  "un_upvote"        
-        "click .delete"        :  "delete"        
-            
+    events:
+      "click .upvote"         :  "upvote"
+      "click .downvote"       :  "downvote"  
+      "click .delete"         :  "delete"      
+
     template: (data,options = {variable: "model"})->
 
       tmp = """
@@ -53,29 +44,12 @@ define [
         <small><a href="http://twitter.com/<%= model.get('owner') %>"><%= model.get('owner') %></a></small>
         </h2>
         <div class="clearfix">
-            <span class="time"><%= model.remaining_time_to_human() %> remaining</span>                 
+            <span class="time"><%= model.voting_time_to_human() %></span>                 
             <% if (model.get("is_pool")){ %>
-            
-            <% if (model.get("up_retweeted")) { %>
-            <button class="un_upvote">Un-upvote! (<%= model.get('upvote_count') %>)</button>
-            <% } else { %>
-            <button class="upvote">Upvote! (<%= model.get('upvote_count') %>)</button>            
-            <% } %>
-            
-            <% if (model.get("down_retweeted")) { %>
-            <button class="un_downvote">Un-downvote! (<%= model.get('downvote_count') %>)</button>
-            <% } else { %>
-            <button class="downvote">Downvote! (<%= model.get('downvote_count') %>)</button>
-            <% } %>
-                          
+            <button class="upvote">Yes<sup><%= model.get('upvote_count') %></sup> &#8593;</button>            
+            <button class="downvote">No<sup><%= model.get('downvote_count') %></sup> &#8595;</button>
             <% }else{ %>
-            
-            <% if (model.get("up_retweeted")) { %>
-            <button class="un_upvote">Un-endorse! (<%= model.get('upvote_count') %>)</button>            
-            <% } else { %>
-            <button class="upvote">Endorse! (<%= model.get('upvote_count') %>)</button>            
-            <% } %>
-            
+            <button class="upvote">Endorse<sup><%= model.get('upvote_count') %></sup> &#8593;</button>            
             <% } %>
             <% if(model.get("user_id") == $(".current_user").attr('id') ) { %>
             <small><button class="delete">Delete</button></small>             
@@ -93,27 +67,17 @@ define [
 
       @    
       
-    vote_hash: (vote) ->
-      hash = {upvote: null, downvote: null, un_upvote: null, un_downvote: null}  
-      hash[vote] = true
-      hash
-      
     do_vote: (e, vote) ->
       app.set_button_state e.currentTarget
-      @model.save(@vote_hash(vote), {wait:true, patch: true, silent: true})
+      @model.save {method: "#{vote}_by"}, {wait: true, patch: true, error: (model,xhr,sync) => @on_vote_error(e,model,xhr,sync)}
       @  
       
     upvote: (e) ->  
       @do_vote(e,"upvote")
       
     downvote: (e) ->  
+      console.log e
       @do_vote(e,"downvote")
-      
-    un_upvote: (e) ->  
-      @do_vote(e,"un_upvote")
-      
-    un_downvote: (e) ->  
-      @do_vote(e,"un_downvote") 
       
     delete: (e) ->  
       app.set_button_state e.currentTarget
@@ -121,6 +85,13 @@ define [
         wait: true
         success: (model) ->
           if window.location.pathname.match(/\/[0-9]+/) != null then window.location.href = "/"
-      @            
+      @  
+    
+    on_vote_error: (e,model,xhr,sync) =>
+      app.set_button_state e.currentTarget,false
+      unless xhr.status is 422
+        errors = JSON.parse(xhr.responseText)
+        for error of errors
+          alert(if error is "base" then errors[error] else "#{error} #{errors[error]}")
   
   ProposalView  

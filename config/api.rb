@@ -4,6 +4,10 @@ require 'yaml'
 require 'erb'
 require 'faraday'
 
+require "app/models/user"
+require "app/models/proposal"
+require "lib/twitocracy"
+
 # Sets up database configuration
 db = URI.parse(ENV['DATABASE_URL'] || 'http://localhost')
 if db.scheme == 'postgres' # Heroku environment
@@ -63,7 +67,3 @@ config[:template] = {
 # )
 
 Pusher.url = "http://#{ENV['PUSHER_KEY']}:#{ENV['PUSHER_SECRET']}@api.pusherapp.com/apps/#{ENV['PUSHER_APP']}"
-
-require "app/models/user"
-require "app/models/proposal"
-require "app/models/retweet"

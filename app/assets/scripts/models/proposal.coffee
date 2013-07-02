@@ -14,15 +14,15 @@ define [
       else
         "/proposals"  
         
-    remaining_time_to_human: ->
-      remaining = Math.round(new Date(@get('finished_at')) - new Date(@get('started_at'))) / 1000
+    voting_time_to_human: ->
+      left= Math.round(new Date(@get('finished_at')) - new Date(@get('started_at'))) / 1000
       # less than a hour
-      if remaining <= 3600
-        "#{remaining / 60} minutes"
+      if left <= 3600
+        "#{left / 60} minutes left"
       # less than a day  
-      else if remaining <= 86400
-        "#{remaining / 3600} hours"
+      else if left <= 86400
+        "#{left / 3600} hours left"
       else
-        "#{remaining / 86400} days"    
+        "#{left / 86400} days left"    
     
   Proposal  

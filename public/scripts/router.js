@@ -31,14 +31,15 @@
       };
 
       Router.prototype["new"] = function() {
-        var _this = this;
+        var inputs,
+          _this = this;
+        inputs = "#proposal_up_tweet, #proposal_down_tweet, #proposal_owner_vote_up, #proposal_owner_vote_down";
         $("#proposal_downvoting_enabled").on("change", function(e) {
           $(e.currentTarget).val($(e.currentTarget).is(":checked"));
-          console.log($(e.currentTarget).val());
           if ($(e.currentTarget).is(":checked")) {
-            return $("#proposal_up_tweet, #proposal_down_tweet").removeAttr("disabled").parent("p").show();
+            return $(inputs).removeAttr("disabled").parents("p").show();
           } else {
-            return $("#proposal_up_tweet, #proposal_down_tweet").attr("disabled", true).parent("p").hide();
+            return $(inputs).attr("disabled", true).parents("p").hide();
           }
         });
         $("textarea, input").on("change", function(e) {

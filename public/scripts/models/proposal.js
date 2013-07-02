@@ -22,15 +22,15 @@
         }
       };
 
-      Proposal.prototype.remaining_time_to_human = function() {
-        var remaining;
-        remaining = Math.round(new Date(this.get('finished_at')) - new Date(this.get('started_at'))) / 1000;
-        if (remaining <= 3600) {
-          return "" + (remaining / 60) + " minutes";
-        } else if (remaining <= 86400) {
-          return "" + (remaining / 3600) + " hours";
+      Proposal.prototype.voting_time_to_human = function() {
+        var left;
+        left = Math.round(new Date(this.get('finished_at')) - new Date(this.get('started_at'))) / 1000;
+        if (left <= 3600) {
+          return "" + (left / 60) + " minutes left";
+        } else if (left <= 86400) {
+          return "" + (left / 3600) + " hours left";
         } else {
-          return "" + (remaining / 86400) + " days";
+          return "" + (left / 86400) + " days left";
         }
       };
 

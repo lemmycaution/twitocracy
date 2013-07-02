@@ -114,14 +114,13 @@ class API < Goliath::API
   patch "/proposals/:id" do
     authenticate_user!
     if proposal = Proposal.open.find_by(id: params["id"])
-      if params["upvote"]
-        render_json proposal.upvote_by(current_user)
-      elsif params["downvote"]
-        render_json proposal.downvote_by(current_user)        
-      elsif params["un_upvote"]  
-        render_json proposal.un_upvote_by(current_user)                
-      elsif params["un_downvote"]  
-        render_json proposal.un_downvote_by(current_user)                        
+      if proposal.respond_to?(params["method"])
+        ap current_user.screenname
+        if proposal.send(params["method"],current_user)
+          render_json proposal
+        else
+          render_json proposal.errors, status: 406
+        end
       else
         error 405
       end
@@ -161,7 +160,7 @@ class API < Goliath::API
   end
   
   def render_json(data = {}, options = {})
-    throw :halt, [options[:status] || 200, (options[:header] || {}).merge({'Content-Type' => 'application/json'}), data.to_json(user: current_user)]   
+    throw :halt, [options[:status] || 200, (options[:header] || {}).merge({'Content-Type' => 'application/json'}), data.to_json]   
   end
   
   def redirect(location, options = {})

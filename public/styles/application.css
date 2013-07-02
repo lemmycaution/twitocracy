@@ -16,7 +16,8 @@ header {
   width: 100%;
   height: 44px;
   padding: 11px;
-  background-color: #E6E7CD; }
+  background-color: #E6E7CD;
+  z-index: 10; }
 
 span.scopes, span#mobile-menu {
   position: relative; }
@@ -160,6 +161,10 @@ i.sep {
         text-decoration: none; }
 
 /* HELPERS */
+.sad {
+  font-size: 96px;
+  color: #dedede; }
+
 .left {
   float: left; }
 
@@ -173,6 +178,12 @@ i.sep {
 
 .clearfix:after {
   clear: both; }
+
+.upvote sup {
+  color: #3E7300; }
+
+.downvote sup {
+  color: #D70014; }
 
 /* FIXES */
 .skiptranslate iframe {

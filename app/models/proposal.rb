@@ -1,5 +1,3 @@
-require "lib/twitocracy/tw_client"
-
 class Proposal < ActiveRecord::Base
   
   DEFAULT_LIMIT = 8
@@ -9,15 +7,14 @@ class Proposal < ActiveRecord::Base
   PROPOSAL_TWEET_LENGTH = TWEET_LENGTH - SHORT_URL_LENGTH
   
   belongs_to :user
-  has_many   :retweets, dependent: :destroy
-  has_many   :retweeters, through: :retweets
   
   validates_presence_of :user_id, :subject, :up_tweet, :started_at, :finished_at
   validates_presence_of :down_tweet, if: lambda { |proposal| proposal.is_pool }  
   
-  validates_length_of :subject, maximum: PROPOSAL_TWEET_LENGTH, if: lambda { |proposal| !proposal.is_pool }
-  validates_length_of :up_tweet, maximum: PROPOSAL_TWEET_LENGTH
-  validates_length_of :down_tweet, maximum: PROPOSAL_TWEET_LENGTH, if: lambda { |proposal| proposal.is_pool }  
+  validates_length_of :subject,     maximum: PROPOSAL_TWEET_LENGTH, if: lambda { |proposal| !proposal.is_pool }
+  validates_length_of :up_tweet,    maximum: PROPOSAL_TWEET_LENGTH
+  validates_length_of :down_tweet,  maximum: PROPOSAL_TWEET_LENGTH, if: lambda { |proposal| proposal.is_pool }  
+  
   validate :validate_up_down_tweet_diff, if: lambda { |proposal| proposal.is_pool }    
   validate :validate_started_at
   validate :validate_finished_at
@@ -25,13 +22,12 @@ class Proposal < ActiveRecord::Base
   
   before_validation :generate_up_tweet_from_subject, if: lambda { |proposal| !proposal.is_pool }  
   
-  after_commit :post_to_twitter, on: :create, if: lambda { |proposal| !proposal.is_pool }
+  before_destroy    :remove_from_twitter
   
-  before_destroy :remove_from_twitter
-  
-  after_create { |p| p.push(:create) }
-  after_update { |p| p.push(:update) }
-  after_destroy { |p| p.push(:destroy) }
+  after_create  :create_master_tweets
+  after_create  lambda { |p| p.push(:create) }
+  after_update  lambda { |p| p.push(:update) }
+  after_destroy lambda { |p| p.push(:destroy) }
   
   scope :latest,    -> { order(created_at: :desc) }
   # TODO: fix pg error
@@ -42,60 +38,58 @@ class Proposal < ActiveRecord::Base
   scope :open,      -> { where("started_at < ? and finished_at > ?", Time.now.at_end_of_day, Time.now.beginning_of_day) }        
   scope :upcoming,  -> { where("started_at > ?", Time.now.at_end_of_day) }          
   scope :page,      lambda {|page| limit(DEFAULT_LIMIT).offset((page-1)*DEFAULT_LIMIT) }  
-  default_scope -> { latest }
+  default_scope     -> { latest }
   
   attr_accessor :downvoting_enabled
-  
-  %w(up down).each do |action|
-    class_eval <<-CODE 
-    def #{action}vote_by(user)
-      if self.#{action}_tweetid.present?
-        tweets = Twitocracy::TwClient.retweet(user, self.#{action}_tweetid)
-        tweets.each do |tweet|
-          if retweetid  = tweet.try(:retweeted_status).try(:id)
-            user.retweets.create(proposal_id: self.id, retweetid:  retweetid, dir: "#{action}")
-          end
-          if retweet_count = tweet.try(:retweet_count)
-            self.update_attributes(#{action}_retweet_count: retweet_count) 
-          end
-        end
-      else
-        inject_url_into_tweets
-        tweet = Twitocracy::TwClient.tweet(user,self.#{action}_tweet)  
-        self.update_attributes(#{action}_tweetid: tweet.id) unless tweet.try(:id).nil?
-      end
-      self
-    end
-    CODE
-  end
+  attr_accessor :owner_vote  
   
   %w(up down).each do |dir|
-    class_eval <<-CODE  
-      def un_#{dir}vote_by(user)
-        retweet = self.retweets.find_by(user_id: user.id, dir: "#{dir}")
-        untweets = Twitocracy::TwClient.destroy(user, retweet.retweetid)
-        untweets.each do |untweet|
-          if retweet_count = untweet.try(:retweeted_status).try(:retweet_count)
-            self.update_attributes(#{dir}_retweet_count: retweet_count) 
+    class_eval <<-CODE 
+    
+    def #{dir}vote_by(user)
+      
+        begin
+          
+          reversedir_tweetid = self.#{dir == "up" ? "down" : "up"}_tweetid
+          if reversedir_tweetid.present? 
+            ap user.screenname
+            begin
+              reverse_tweet = user.status_get(reversedir_tweetid)
+              if reverse_tweet.retweeted
+                self.errors.add(:base, "You have already voted on this proposal")  
+                return false
+              end
+            rescue Twitter::Error::NotFound  
+              # self.update_attributes(#{dir == "up" ? "down" : "up"}_tweetid: nil)
+              self.errors.add(:base, "Proposal has not been found")  
+              return false
+            end
           end
+          
+          tweets = user.status_retweet(self.#{dir}_tweetid)
+          unless tweets.empty?
+            if total_retweet_count = tweets.map(&:retweet_count).inject(:+)
+              self.update(:"#{dir}_retweet_count" => total_retweet_count) 
+            end
+          else
+            self.errors.add(:base, "Sorry, your vote has not been casted")  
+            return false
+          end
+            
+        rescue Exception => e
+          ap "Proposal##{dir}vote_by \#{e.inspect}"
+          self.errors.add(:base, e.message)
+          return false
         end
-        retweet.destroy
-        self
-      end
+        
+    end
+    
     CODE
   end
   
   def as_json(options = {})
-    if user = options.delete(:user)
-      options = options.merge(methods: [:owner,:is_pool,:upvote_count,:downvote_count])
-      json = super(options)
-      json["up_retweeted"] = self.retweeted_by(user)
-      json["down_retweeted"] = self.retweeted_by(user, "down")      
-      json
-    else
-      options = options.merge(methods: [:owner,:is_pool,:upvote_count,:downvote_count])
-      super(options)      
-    end
+    options = options.merge(methods: [:owner,:is_pool,:upvote_count,:downvote_count])
+    super(options)
   end
   
   def owner
@@ -111,20 +105,19 @@ class Proposal < ActiveRecord::Base
   end
   
   def upvote_count
-    self.up_retweet_count + (self.up_tweetid ? 1 : 0)
+    self.up_retweet_count
   end
   
   def downvote_count
-    self.down_retweet_count + (self.down_tweetid ? 1 : 0)
-  end
-  
-  def retweeted_by(user, dir = "up")
-    !self.retweets.where(dir: dir).find_by(user_id: user.id).nil?
-    # self.retweeters.includes(:retweet).where(dir: dir).references(:retweets).include?(user)
+    self.down_retweet_count
   end
   
   def push(event)
     Pusher[event == :create ? 'proposals' : "proposal-#{self.id}"].trigger(event, self.as_json)
+  end
+  
+  def public_url
+    "http://twitocracy.herokuapp.com/#{self.id}"
   end
   
   private
@@ -134,52 +127,81 @@ class Proposal < ActiveRecord::Base
   end
   
   def inject_url_into_tweets
-    self.up_tweet = "#{self.up_tweet} http://twitocracy.herokuapp.com/#{self.id}"
-    self.down_tweet = "#{self.down_tweet} http://twitocracy.herokuapp.com/#{self.id}" if self.is_pool    
+    self.up_tweet   = "#{self.up_tweet} #{public_url}" if !self.up_tweet.include?(public_url)
+    self.down_tweet = "#{self.down_tweet} #{public_url}" if self.is_pool && !self.down_tweet.include?(public_url)
   end
   
-  def post_to_twitter
-    inject_url_into_tweets
-    tweet = Twitocracy::TwClient.tweet(self.user, self.up_tweet)
+  def create_master_tweets
     begin
-      self.update_attributes(up_tweetid: tweet.id) unless tweet.try(:id).nil?
+      
+      inject_url_into_tweets
+      
+      if tweet_id = Twitocracy.master.status_update(self.up_tweet).id
+        self.update(up_tweetid: tweet_id) 
+      else
+        self.errors.add(:base, "Sorry, your proposal has not been created")  
+        return false
+      end
+    
+      if self.is_pool 
+      
+        if tweet_id = Twitocracy.master.status_update(self.down_tweet).id
+          self.update(down_tweetid: tweet_id) 
+        else
+          self.errors.add(:base, "Sorry, your proposal has not been created")  
+          return false
+        end
+      
+      
+        if self.owner_vote == "up"
+          self.upvote_by(self.user)
+        else
+          self.downvote_by(self.user)
+        end
+      
+      else
+      
+        self.upvote_by(self.user)
+      
+      end
+    
     rescue Exception => e
-      ap e.inspect
-    end    
+      ap "Proposal#create_master_tweets #{e.inspect}"
+    end
   end
   
   def remove_from_twitter
     begin
-      Twitocracy::TwClient.destroy(self.user, self.up_tweetid) if self.up_tweetid    
-      Twitocracy::TwClient.destroy(self.user, self.down_tweetid) if self.down_tweetid       
+      Twitocracy.master.status_destroy(self.up_tweetid) if self.up_tweetid    
+      Twitocracy.master.status_destroy(self.down_tweetid) if self.down_tweetid       
     rescue Exception => e
-      ap e.inspect
+      ap "Proposal#remove_from_twitter #{e.inspect}"
     end
   end
   
   def validate_count_against_rate_limit
-    errors.add(:base, "you can have maximum #{MAX_COUNT_PER_USER} open proposal at the same time") if self.user.proposals.open.count >= MAX_COUNT_PER_USER
+    errors.add(:base, "you can have maximum #{MAX_COUNT_PER_USER} open proposals at the same time") if self.user.proposals.open.count >= MAX_COUNT_PER_USER
   end
   
   def validate_started_at
     if self.started_at
-      errors.add(:started_at, "must be on or after today") unless validate_date_on_or_after(self.started_at)
+      errors.add(:started_at, "must be on or after today") unless is_date_on_or_after_now(self.started_at)
     end
   end
   
   def validate_finished_at
     if self.started_at && self.finished_at
-      errors.add(:finished_at, "must be on or after today") unless validate_date_on_or_after(self.finished_at)
+      errors.add(:finished_at, "must be on or after today") unless is_date_on_or_after_now(self.finished_at)
       errors.add(:finished_at, "must be greater then start date") if self.finished_at <= self.started_at
     end
   end  
   
-  def validate_date_on_or_after(date)
-    date >= Date.current
-  end
-  
   def validate_up_down_tweet_diff
     errors.add(:down_tweet, "must be different then up tweet") if self.up_tweet == self.down_tweet
+  end
+  
+  def is_date_on_or_after_now(date)
+    date >= Date.current
   end
   
 end
