@@ -4,6 +4,21 @@ require 'em-synchrony/activerecord'
 require 'yaml'
 require 'erb'
 
+def db_conf
+  config = YAML.load(ERB.new(File.read('config/database.yml')).result)
+end
+
+def env
+  ENV['RACK_ENV'] ||= "development"
+end
+
+namespace :travis do
+  desc "empty task to skip travis tests before adding real tests"
+  task :default do
+    puts "Hello Travis!"
+  end
+end
+
 namespace :db do
   desc "loads database configuration in for other tasks to run"
   task :load_config do
@@ -42,10 +57,4 @@ namespace :db do
   
 end
 
-def db_conf
-  config = YAML.load(ERB.new(File.read('config/database.yml')).result)
-end
-
-def env
-  ENV['RACK_ENV'] ||= "development"
-end
+task :default => ["travis:default"]

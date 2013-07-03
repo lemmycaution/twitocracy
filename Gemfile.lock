@@ -92,6 +92,7 @@ GEM
     rack-fiber_pool (0.9.3)
     rack-respond_to (0.9.8)
       rack-accept-media-types (>= 0.6)
+    rake (10.0.4)
     rb-fsevent (0.9.3)
     sass (3.2.9)
     signature (0.1.7)
@@ -127,6 +128,7 @@ DEPENDENCIES
   pg
   pusher
   rack-fiber_pool
+  rake
   rb-fsevent (~> 0.9)
   sass
   tilt

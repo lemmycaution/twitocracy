@@ -35,3 +35,7 @@ gem 'sass'
 gem 'rb-fsevent', '~> 0.9'
 
 gem 'pusher'
+
+group :test do
+  gem 'rake'
+end
