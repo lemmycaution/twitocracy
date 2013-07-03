@@ -7,12 +7,7 @@
         window.app = this;
         this.router = new Router;
         this.loading_indicator = "&nbsp;&nbsp;&#8635;&nbsp;&nbsp;";
-        Pusher.log = function(message) {
-          if (window.console && window.console.log) {
-            return window.console.log(message);
-          }
-        };
-        this.pusher = new Pusher('4fbe8880e77dc33c220e');
+        this.pusher = new Pusher(pkey);
         this.set_button_state = function(el, loading) {
           var $el;
           if (loading == null) {

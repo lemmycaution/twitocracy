@@ -6,7 +6,10 @@ require 'bcrypt'
 
 class API < Goliath::API
   
+  # to rendering erb templates
   include Goliath::Rack::Templates
+  
+  # easy routing for goliath
   include Twitocracy::Router 
   
   use Rack::Static,                     
@@ -16,14 +19,25 @@ class API < Goliath::API
   use Goliath::Rack::Render
   use Goliath::Rack::DefaultMimeType
   use Goliath::Rack::Params  
+  
+  # bloody sessions
   use Goliath::Rack::SimpleAroundwareFactory, Twitocracy::Session
   
+  # periodic worker to update reweet(vote) counts
   plugin Twitocracy::Updater
   
+  # FRONT-END API
+  
+  # main page
+  # GET /
   get "/" do
     render_view :index
   end  
   
+  # tiwtter oauth leg 1,2
+  # redirects user to twitter for signing-in
+  # and saves request token on return
+  # GET /connect
   get "/connect"  do  
     suid = generate_sid
     request_token = env.twitter_oauth.authentication_request_token(oauth_callback: "#{ENV['CALLBACK_URL']}"  )        
@@ -31,6 +45,10 @@ class API < Goliath::API
     redirect request_token.authorize_url(token: request_token.token)
   end
   
+  # twitter oauth leg3
+  # handles twitter oauth callback, verifies tokens
+  # saves the user in session if everything is ok
+  # GET /auth
   get "/auth" do
         
     if session["token"]
@@ -61,6 +79,8 @@ class API < Goliath::API
     redirect "/"
   end
 
+  # sign-outs the current user & clean ups the session
+  # GET /disconnect
   get "/disconnect" do
     authenticate_user!
     current_user.update(suid: nil)      
@@ -68,18 +88,27 @@ class API < Goliath::API
     redirect "/"
   end
   
+  # renders new proposal form
+  # requires authenticated user
+  # GET /new
   get "/new"  do
     authenticate_user!
     render_view :new
   end
   
+  # renders single proposal
+  # GET /1
   get "/:id" do
     render_view :show
   end
 
-  # PROPOSALS
+  # BACK-END API
   
   # index
+  # returns json representation of latest proposals with given page (default 1)
+  # valid parameters are page and scope
+  # look Proposal model for all scopes
+  # GET /proposals(?page=1, optional)(&scope=closed, optional)
   get "/proposals" do
     proposals = Proposal.all
     proposals = proposals.public_send params["scope"] || :open
@@ -91,6 +120,8 @@ class API < Goliath::API
   end
   
   # show
+  # returns json representation of proposal with given id
+  # GET /proposals/1
   get "/proposals/:id" do
     if proposal = Proposal.find_by(id: params["id"])
       render_json proposal
@@ -100,6 +131,9 @@ class API < Goliath::API
   end
   
   # create
+  # creates a new proposal
+  # accepts x-url-form-encoded post parameters
+  # POST /proposals  
   post "/proposals" do
     authenticate_user!
     proposal = current_user.proposals.new(params)
@@ -147,31 +181,23 @@ class API < Goliath::API
   
   private
   
-  # def respond_with(data, options = {})
-  #   if env['HTTP_ACCEPT'].include?("json")
-  #     render_json data, options
-  #   else
-  #     render_view options.delete(:view), options.merge({data: data})  
-  #   end    
-  # end
-  
   def render_view(view, options = {})
-    throw :halt, [ options[:status] || 200, options[:headers] || {'Content-Type' => 'text/html'}, erb(view, {locals: options[:data]}) ]    
+    respond [ options[:status] || 200, options[:headers] || {'Content-Type' => 'text/html'}, erb(view, {locals: options[:data]}) ]    
   end
   
   def render_json(data = {}, options = {})
-    throw :halt, [options[:status] || 200, (options[:header] || {}).merge({'Content-Type' => 'application/json'}), data.to_json]   
+    respond [options[:status] || 200, (options[:header] || {}).merge({'Content-Type' => 'application/json'}), data.to_json]   
   end
   
   def redirect(location, options = {})
-    throw :halt, [302, {'Location'=> location}, []]
+    respond [302, {'Location'=> location}, []]
   end
 
   def error(status)
     if env['HTTP_ACCEPT'].include?("json")
-      throw :halt,[status, {'Content-Type' => 'application/json'}, ""]      
+      respond [status, {'Content-Type' => 'application/json'}, ""]      
     else
-      throw :halt,[status, {}, File.open(Goliath::Application.root_path("public/#{status}.html"))]      
+      respond [status, {}, File.open(Goliath::Application.root_path("public/#{status}.html"))]      
     end
   end
 

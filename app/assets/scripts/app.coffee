@@ -15,11 +15,11 @@ define [
      
      @loading_indicator = "&nbsp;&nbsp;&#8635;&nbsp;&nbsp;"
      
-     Pusher.log = (message) ->
-       if (window.console && window.console.log) 
-         window.console.log(message)
+     # Pusher.log = (message) ->
+     #   if (window.console && window.console.log) 
+     #     window.console.log(message)
 
-     @pusher = new Pusher('4fbe8880e77dc33c220e')
+     @pusher = new Pusher(pkey)
      
      @set_button_state = (el, loading = true) ->
        $el = $(el)

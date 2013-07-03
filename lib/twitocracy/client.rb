@@ -1,17 +1,17 @@
 module Twitocracy
-  module TwitterUser
+  module Client
 
     extend ActiveSupport::Concern
     
-    def status_get(tweet)
+    def status(tweet)
       client.status(tweet)
     end
     
-    def status_update(tweet)
+    def tweet(tweet)
       client.update(tweet)
     end
     
-    def status_retweet(tweetid)
+    def retweet(tweetid)
       client.retweet(tweetid)
     end
     
@@ -23,10 +23,10 @@ module Twitocracy
     
     def client
       Twitter::Client.new(
-      :consumer_key => ENV['CONSUMER_KEY'],
-      :consumer_secret => ENV['CONSUMER_SECRET'],
-      :oauth_token => self.token,
-      :oauth_token_secret => self.secret
+        :consumer_key => ENV['CONSUMER_KEY'],
+        :consumer_secret => ENV['CONSUMER_SECRET'],
+        :oauth_token => self.token,
+        :oauth_token_secret => self.secret
       )
     end
 

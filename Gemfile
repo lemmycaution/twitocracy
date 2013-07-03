@@ -34,6 +34,4 @@ gem 'sass'
 
 gem 'rb-fsevent', '~> 0.9'
 
-gem 'twitter-text'
-
 gem 'pusher'
