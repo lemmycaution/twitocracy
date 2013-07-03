@@ -26,29 +26,29 @@ module Twitocracy
         update!
       end
     end
+    
+    def restart_clock!
+      @timer.cancel 
+      EM.add_timer(error.rate_limit.reset_in) { clock! }
+    end
   
     def update!
       Fiber.new{
         
         # iterate open proposals    
         Proposal.open.each{ |proposal|
+          
           begin
             
-            # use owner's token for fair rate limiting
-            twitter = proposal.user.token.present? ? client(proposal.user) : Twitter
+            # fill updates hash with retweet counts
+            updates = {
+            up_retweet_count: retweet_count(proposal,"up"),
+            down_retweet_count: retweet_count(proposal,"down")            
+            }
             
-            # hash for possible updates
-            updates = {}
+            # update proposal if there is any update
+            proposal.update(updates) unless updates.values.compact.empty?
             
-            # get retweets for uptweet
-            up_retweet_count = proposal.up_tweetid ? twitter.status(proposal.up_tweetid).try(:retweet_count) || 0 : 0
-            # get retweets for downtweet            
-            down_retweet_count = proposal.down_tweetid ? twitter.status(proposal.down_tweetid).try(:retweet_count) || 0 : 0                    
-            # fill updates hash if counts are different
-            updates[:up_retweet_count] = up_retweet_count if proposal.up_retweet_count != up_retweet_count
-            updates[:down_retweet_count] = down_retweet_count if proposal.down_retweet_count != down_retweet_count
-            # update proposal!
-            proposal.update(updates) unless updates.values.empty?
           rescue Twitter::Error::TooManyRequests, Twitter::Error::Unauthorized, Twitter::Error::NotFound, Exception => error
             case error
               
@@ -58,19 +58,18 @@ module Twitocracy
               proposal.user.update_attributes(token: nil, secret: nil, suid: nil)
               retry
               
-            # re-clock the updater if rate limit hitted
+            # restart clock the updater if rate limit hitted
             when Twitter::Error::TooManyRequests
               # NOTE: Your process could go to sleep for up to 15 minutes but if you
               # retry any sooner, it will almost certainly fail with the same exception.
-              @timer.cancel 
-              EM.add_timer(error.rate_limit.reset_in) { clock! }
+              restart_clock!
             
             # delete proposal if up or down tweet is removed from master account's timeline  
             # and restart the clock
             when Twitter::Error::NotFound
               proposal.destroy
-              @timer.cancel 
-              EM.add_timer(error.rate_limit.reset_in) { clock! }
+              restart_clock!
+              
             
             # log any other error  
             # TODO: email sysadmin about error or tweet it!
@@ -82,6 +81,19 @@ module Twitocracy
         }
         
       }.resume
+    end
+    
+    # get retweets for up or down tweet
+    # return nil on any error or counts are same
+    def retweet_count proposal, dir
+      return nil unless tweet_id = proposal.send(:"#{dir}_tweetid") 
+      return nil unless retweet_count = twitter(proposal).status(tweet_id).try(:retweet_count)
+      retweet_count if retweet_count != proposal.send(:"#{dir}_retweet_count")      
+    end
+    
+    # use owner's token for fair rate limiting
+    def twitter proposal
+      twitter = proposal.user.token.present? ? client(proposal.user) : Twitter
     end
     
     def client(user)
