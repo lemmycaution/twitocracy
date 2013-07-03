@@ -41,41 +41,8 @@ module Twitocracy
   
     def response(env)
       
-      # little test for handling routes with scope and page
-      # ex:
-      # /scope/up/page/1
-      # /page/1
-      # /scope/closed 
-      # better, smarter implementations welcome
-      matches = env["REQUEST_PATH"].scan(/\/(scope|page)\/([a-zA-z0-9]+)/)
-      if matches.any?
-        path = "/"
-        if matches[0][0] == "scope"
-          params = {"scope" => matches[0][1]}
-          params["page"] = matches[1][0] if matches.length > 1
-        elsif matches[0][0] == "page"  
-          params = {"page" => matches[0][1]}          
-          params["scope"] = matches[1][0] if matches.length > 1          
-        end
-        env["params"] = (env["params"] || {}).merge(params)  
-        
-      # another test for route param :id
-      # ex:
-      # /proposals/1
-      # /users/1
-      elsif env["REQUEST_PATH"] =~ /\/([a-zA-Z]+)\/([0-9]+)/
-        path = "/#{$1}/:id"
-        env["params"] = (env["params"] || {}).merge("id" => $2)
-      
-      # and for /:id  
-      elsif env["REQUEST_PATH"] =~ /\/([0-9]+)/
-        path = "/:id"
-        env["params"] = (env["params"] || {}).merge("id" => $1)  
-      
-      # handle rest as requested
-      else
-        path = env["REQUEST_PATH"]
-      end
+      path, params = parse_path_and_params(env)
+      env["params"] = (env["params"] || {}).merge(params)        
 
       # match route by parsed request
       sig = self.class.signature(env['REQUEST_METHOD'], path)
@@ -103,6 +70,44 @@ module Twitocracy
     
     def respond(response)
       throw :halt, response
+    end
+    
+    private
+    
+    def parse_path_and_params(env)
+      # little test for handling routes with scope and page
+      # ex:
+      # /scope/up/page/1
+      # /page/1
+      # /scope/closed 
+      # better, smarter implementations welcome
+      if (matches = env["REQUEST_PATH"].scan(/\/(scope|page)\/([a-zA-z0-9]+)/)).any?
+        path = "/"
+        if matches[0][0] == "scope" ||  matches[0][0] == "page"  
+          params = {"scope" => matches[0][1]}
+          params["page"] = matches[1][0] if matches.length > 1
+        end
+        
+      # another test for route param :id
+      # ex:
+      # /proposals/1
+      # /users/1
+      elsif env["REQUEST_PATH"] =~ /\/([a-zA-Z]+)\/([0-9]+)/
+        path = "/#{$1}/:id"
+        params = {"id" => $2}
+      
+      # and for /:id  
+      elsif env["REQUEST_PATH"] =~ /\/([0-9]+)/
+        path = "/:id"
+        params = {"id" => $1}
+      
+      # handle rest as requested
+      else
+        path = env["REQUEST_PATH"]
+        params = {}        
+      end
+      
+      [path,params]
     end
   
   end
