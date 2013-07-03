@@ -173,32 +173,17 @@ class Proposal < ActiveRecord::Base
       inject_url_into_tweets
       
       # tweet it!
-      if tweet_id = Twitocracy.master.tweet(self.up_tweet).id
-        self.update(up_tweetid: tweet_id) 
-      else
-        self.errors.add(:base, "Sorry, your proposal has not been created")  
-        raise ActiveRecord::Rollback "Sorry, your proposal has not been created"
-        return false
-      end
+      return false unless tweet_master("up")
       
       # if downvoting enabled tweet downvote as well
       if self.is_pool 
       
-        if tweet_id = Twitocracy.master.tweet(self.down_tweet).id
-          self.update(down_tweetid: tweet_id) 
-        else
-          self.errors.add(:base, "Sorry, your proposal has not been created")  
-          raise ActiveRecord::Rollback "Sorry, your proposal has not been created"          
-          return false
-        end
+        # tweet it!
+        return false unless tweet_master("down")
       
         # cast owner's vote
-        if self.owner_vote == "up"
-          self.upvote_by(self.user)
-        else
-          self.downvote_by(self.user)
-        end
-      
+        self.owner_vote == "up" ? self.upvote_by(self.user) : self.downvote_by(self.user)
+
       else
       
         self.upvote_by(self.user)
@@ -208,6 +193,7 @@ class Proposal < ActiveRecord::Base
     rescue Exception => e
       ap "Proposal#create_master_tweets #{e.inspect}"
     end
+    
   end
   
   # clean up master's timeline
@@ -217,6 +203,16 @@ class Proposal < ActiveRecord::Base
       Twitocracy.master.status_destroy(self.down_tweetid) if self.down_tweetid       
     rescue Exception => e
       ap "Proposal#remove_from_twitter #{e.inspect}"
+    end
+  end
+  
+  def tweet_master(dir)
+    if tweet_id = Twitocracy.master.tweet(self.send("#{dir}_tweet")).id
+      self.update(:"#{dir}_tweetid" => tweet_id) 
+    else
+      self.errors.add(:base, "Sorry, your proposal has not been created")  
+      raise ActiveRecord::Rollback "Sorry, your proposal has not been created"
+      false
     end
   end
   
